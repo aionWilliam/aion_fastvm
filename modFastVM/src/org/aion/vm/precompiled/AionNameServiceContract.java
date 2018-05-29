@@ -50,7 +50,6 @@ import static org.aion.crypto.HashUtil.blake128;
  * @author William
  */
 
-
 public class AionNameServiceContract extends PrecompiledContracts.StatefulPrecompiledContract{
 
     // set to a default cost for now, this will need to be adjusted

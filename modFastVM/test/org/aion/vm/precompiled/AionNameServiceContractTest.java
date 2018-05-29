@@ -44,7 +44,6 @@ public class AionNameServiceContractTest {
     private final static String OWNER_HASH = "OwnerHash";
     private final static String TTL_HASH = "TTLHash";
 
-
     private String domainName1 = "aion";
     private String domainName2 = "aion.aion"; //subdomain of domainName1
     private String domainName3 = "aion.bion"; //subdomain of domainName1
