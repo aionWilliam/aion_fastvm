@@ -50,8 +50,6 @@ import static org.aion.crypto.HashUtil.blake128;
  * @author William
  */
 
-//testing git hub
-
 public class AionNameServiceContract extends PrecompiledContracts.StatefulPrecompiledContract{
 
     // set to a default cost for now, this will need to be adjusted
@@ -75,16 +73,21 @@ public class AionNameServiceContract extends PrecompiledContracts.StatefulPrecom
     public AionNameServiceContract(IRepositoryCache<AccountState, DataWord, IBlockStoreBase<?, ?>> track, Address
             address, Address ownerAddress, String domainName){
         super(track);
+        this.address = address;
+        setUpKeys();
         if (!isValidDomainAddress(address)) {
             throw new IllegalArgumentException("Invalid domain address, check for aion prefix: 0xa0(66char) or a0(64char)\n") ;
         }
         if (!isValidOwnerAddress(ownerAddress)){
             throw new IllegalArgumentException("The owner address does not exist in the given repository\n");
         }
-        this.address = address;
+        if (!(getOwnerAddress().equals(ownerAddress)) && !(getOwnerAddress().equals(Address.wrap("0000000000000000000000000000000000000000000000000000000000000000"))) ){
+            throw new IllegalArgumentException("The owner address of this domain from repository is different than the given" +
+                    "owner address from the input\n");
+        }
         this.ownerAddress = ownerAddress;
         this.domainName = domainName;
-        setUpKeys();
+
     }
 
     /**
@@ -230,6 +233,9 @@ public class AionNameServiceContract extends PrecompiledContracts.StatefulPrecom
     private ExecutionResult transferSubdomainOwnership(byte[] subdomainAddress, long nrg, byte[] hash1, byte[] hash2, byte[] addr1, byte[] addr2, String subdomain){
         if(nrg < TRANSFER_COST)
             return new ExecutionResult(ExecutionResult.Code.OUT_OF_NRG,0);
+
+        if (!isValidOwnerAddress(Address.wrap(combineTwoBytes(addr1, addr2))))
+            return new ExecutionResult(ExecutionResult.Code.INTERNAL_ERROR, nrg);
 
         Address sdAddress = Address.wrap(subdomainAddress);
 
