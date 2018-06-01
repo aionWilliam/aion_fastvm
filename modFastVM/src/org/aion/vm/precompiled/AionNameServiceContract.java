@@ -1,23 +1,31 @@
-/*******************************************************************************
- *
+/**
  * Copyright (c) 2017-2018 Aion foundation.
  *
- *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
+ *     This file is part of the aion network project.
  *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
+ *     The aion network project is free software: you can redistribute it
+ *     and/or modify it under the terms of the GNU General Public License
+ *     as published by the Free Software Foundation, either version 3 of
+ *     the License, or any later version.
+ *
+ *     The aion network project is distributed in the hope that it will
+ *     be useful, but WITHOUT ANY WARRANTY; without even the implied
+ *     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *     See the GNU General Public License for more details.
  *
  *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <https://www.gnu.org/licenses/>
+ *     along with the aion network project source files.
+ *     If not, see <https://www.gnu.org/licenses/>.
  *
- * Contributors:
+ *     The aion network project leverages useful source code from other
+ *     open source projects. We greatly appreciate the effort that was
+ *     invested in these projects and we thank the individual contributors
+ *     for their work. For provenance information and contributors
+ *     please see <https://github.com/aionnetwork/aion/wiki/Contributors>.
+ *
+ * Contributors to the aion source files in decreasing order of code volume:
  *     Aion foundation.
- ******************************************************************************/
+ */
 package org.aion.vm.precompiled;
 
 import org.aion.base.db.IRepositoryCache;
@@ -30,11 +38,10 @@ import org.aion.mcf.vm.types.DataWord;
 import org.aion.vm.ExecutionResult;
 import org.aion.vm.PrecompiledContracts;
 
-
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.aion.crypto.HashUtil.blake128;
-
-//import java.nio.ByteBuffer;
 
 /**
  * Aion Name Service Contract
@@ -53,6 +60,7 @@ import static org.aion.crypto.HashUtil.blake128;
 public class AionNameServiceContract extends PrecompiledContracts.StatefulPrecompiledContract{
 
     // set to a default cost for now, this will need to be adjusted
+    private final static Map<String, Address> domains = new HashMap<>();
     private final static long SET_COST = 1000;
     private final static long TRANSFER_COST = 2000;
     private final static String RESOLVER_HASH = "ResolverHash";
@@ -65,6 +73,7 @@ public class AionNameServiceContract extends PrecompiledContracts.StatefulPrecom
     private Address resolverAddressKey;
     private Address TTLKey;
     private String domainName;
+    private Address contractKey;
 
     /**
      * Construct a new ANS Contract
@@ -85,6 +94,10 @@ public class AionNameServiceContract extends PrecompiledContracts.StatefulPrecom
             throw new IllegalArgumentException("The owner address of this domain from repository is different than the given" +
                     "owner address from the input\n");
         }
+        if (!isValidDomainName(domainName)){
+            throw new IllegalArgumentException("An ANS contract with domain name: \"" + domainName + "\" already exists");
+        }
+        domains.put(domainName, address);
         this.ownerAddress = ownerAddress;
         this.domainName = domainName;
 
@@ -332,6 +345,12 @@ public class AionNameServiceContract extends PrecompiledContracts.StatefulPrecom
         return  (this.track.hasContractDetails(ownerAddress));
     }
 
+    private boolean isValidDomainName(String domainName){
+        if (domains.containsKey(domainName))
+            return false;
+        return true;
+    }
+
     /**
      *  getter functions
      */
@@ -343,4 +362,8 @@ public class AionNameServiceContract extends PrecompiledContracts.StatefulPrecom
 
     public Address getOwnerAddress(Address key){ return getValueFromStorage(key); }
 
+    public static void clearDomainList(){ domains.clear(); }
+
 }
+
+
